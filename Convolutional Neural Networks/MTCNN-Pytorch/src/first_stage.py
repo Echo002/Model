@@ -25,6 +25,7 @@ def run_first_stage(image, net, scale, threshold):
 
     # scale the image and convert it to a float array
     width, height = image.size
+    # math.ceil对浮点数向上取整
     sw, sh = math.ceil(width*scale), math.ceil(height*scale)
     img = image.resize((sw, sh), Image.BILINEAR)
     img = np.asarray(img, 'float32')
@@ -34,8 +35,8 @@ def run_first_stage(image, net, scale, threshold):
     output = net(img)
     probs = output[1].data.numpy()[0, 1, :, :]
     offsets = output[0].data.numpy()
-    # probs: probability of a face at each sliding window
-    # offsets: transformations to true bounding boxes
+    # probs: 每个滑动窗口是面部的概率
+    # offsets: 转换为真正的边界框
 
     boxes = _generate_bboxes(probs, offsets, scale, threshold)
     if len(boxes) == 0:
