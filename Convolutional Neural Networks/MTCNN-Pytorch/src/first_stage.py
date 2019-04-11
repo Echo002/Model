@@ -25,16 +25,23 @@ def run_first_stage(image, net, scale, threshold):
 
     # scale the image and convert it to a float array
     width, height = image.size
+    # print(width, height) == (615, 407)
     # math.ceil对浮点数向上取整
     sw, sh = math.ceil(width*scale), math.ceil(height*scale)
+    # print(sw, sh) == (492, 326)
     img = image.resize((sw, sh), Image.BILINEAR)
     img = np.asarray(img, 'float32')
 
     with torch.no_grad():
         img = Variable(torch.FloatTensor(_preprocess(img)))
+    # print("img:",img.shape) == (1,3,326,492)
     output = net(img)
+    # print(output[0].data.numpy().shape) == (1,4,158,241)
+    # print(output[1].data.numpy().shape) == (1,2,158,241)
     probs = output[1].data.numpy()[0, 1, :, :]
+    # print(probs.shape) == (185,241)
     offsets = output[0].data.numpy()
+    # print(offsets.shape) == (1,4,158,241)
     # probs: 每个滑动窗口是面部的概率
     # offsets: 转换为真正的边界框
 
@@ -68,11 +75,14 @@ def _generate_bboxes(probs, offsets, scale, threshold):
 
     # indices of boxes where there is probably a face
     inds = np.where(probs > threshold)
+    # python的广播机制
+    # np.where:输出满足条件(即非0)元素的下标
+    # print(inds)
 
     if inds[0].size == 0:
         return np.array([])
 
-    # transformations of bounding boxes
+    # 转换为边界框
     tx1, ty1, tx2, ty2 = [offsets[0, i, inds[0], inds[1]] for i in range(4)]
     # they are defined as:
     # w = x2 - x1 + 1
