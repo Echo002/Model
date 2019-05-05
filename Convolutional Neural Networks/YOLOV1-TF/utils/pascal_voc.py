@@ -44,6 +44,7 @@ class pascal_voc(object):
 
     def image_read(self, imname, flipped=False):
         image = cv2.imread(imname)
+        print("this is image:", image)
         image = cv2.resize(image, (self.image_size, self.image_size))
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB).astype(np.float32)
         image = (image / 255.0) * 2.0 - 1.0
